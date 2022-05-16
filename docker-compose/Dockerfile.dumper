@@ -1,0 +1,9 @@
+FROM ldez/traefik-certs-dumper:v2.7.4
+
+WORKDIR /data
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/usr/bin/traefik-certs-dumper"]
+
+RUN apk add jq
+
+COPY docker-compose/entrypoint.dumper.sh /entrypoint.sh

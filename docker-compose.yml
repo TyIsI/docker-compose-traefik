@@ -1,0 +1,40 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: "traefik:v2.4"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--entryPoints.websecure.forwardedHeaders.insecure"
+      - "--certificatesresolvers.lets-encrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.lets-encrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.lets-encrypt.acme.email=${LETSENCRYPT_EMAIL}"
+      - "--certificatesresolvers.lets-encrypt.acme.storage=/letsencrypt/acme.json"
+      - "--providers.file.directory=/conf"
+      - "--providers.file.watch=true"
+      - "--pilot.token=${PILOT_TOKEN}"
+    networks:
+      - public
+      - proxy
+    ports:
+      - 80:80
+      - 443:443
+    restart: always
+    volumes:
+      - "./conf:/conf:ro"
+      - "./letsencrypt:/letsencrypt:rw"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+networks:
+  public:
+    external: true
+  proxy:
+    external: true
